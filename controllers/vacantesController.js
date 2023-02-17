@@ -74,4 +74,5 @@ exports.editarVacante = async (req, res, next) => {
   );
 
   res.redirect(`/vacantes/${vacante.url}`);
+  //hola
 };
