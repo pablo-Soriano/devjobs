@@ -390,6 +390,11 @@ trix-toolbar .trix-button--icon-strike {
 }
 
 /** Admin **/
+.admin-perfil {
+    width: 120px;
+    align-self: flex-start;
+    margin-right: 1rem;
+}
 
 p.candidatos {
     font-weight: 400;

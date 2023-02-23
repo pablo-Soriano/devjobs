@@ -1,5 +1,55 @@
 const mongoose = require("mongoose");
+const multer = require("multer");
 const Usuarios = mongoose.model("Usuarios");
+const shortid = require('shortid');
+
+
+
+exports.subirImagen = (req, res, next) => {
+  upload(req, res, function(error) {
+    if (error){
+        if(error instanceof multer.MulterError) {
+            if(error.code === 'LIMIT_FILE_SIZE') {
+                req.flash('error', 'El archivo es muy grande: Máximo 100kb')
+            } else {
+                req.flash('error', error.message);
+            }
+        } else {
+          req.flash('error',error.message);
+        }
+        res.redirect('/administracion');
+        return;
+    } else {
+      return next();
+    }
+  });
+  
+}
+
+// Opciones de Multer - para subir imagen, la ubicacion y nombre de archivo
+const configuracionMulter = {
+  limits: {fileSize: 100000 }, //tamaño viene en bytes
+  storage: fileStorage = multer.diskStorage({
+      destination: (req, file, cb) => { // le ponemos cb de callback, puede ser cualquier nombre. el cb recibe (error, file), pero como no tendremos error se envia como null
+          cb(null, __dirname+'../../public/uploads/perfiles');
+      },
+      filename: (req, file, cb) =>{
+        const extension = file.mimetype.split('/')[1];
+        cb(null,`${shortid.generate()}.${extension}`);
+      }
+  }),
+  fileFilter(req, file, cb) {
+    if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'){
+        // el callback se ejecuta como true o false: true cuando la imagen se acepta
+        cb(null, true);
+    } else {
+      cb(new Error('Formato no Válido'), false);
+    }
+  }
+  
+}
+
+const upload = multer(configuracionMulter).single('imagen');
 
 exports.formCrearCuenta = (req, res) => {
   res.render("crear-cuenta", {
@@ -75,6 +125,7 @@ exports.formEditarPerfil = (req, res) => {
     usuario: req.user,
     cerrarSesion: true,
     nombre: req.user.nombre,
+    imagen: req.user.imagen
   })
 }
 
@@ -89,6 +140,10 @@ exports.editarPerfil = async (req, res) => {
   //si el usuario ingresa un password, se cambiara en base
   if(req.body.password) {
     usuario.password = req.body.password;
+  }
+
+  if(req.file) {
+    usuario.imagen = req.file.filename;
   }
 
    await usuario.save();
@@ -124,6 +179,7 @@ exports.validarPerfil = (req, res, next) => {
       usuario: req.user,
       cerrarSesion: true,
       nombre: req.user.nombre,
+      imagen: req.user.imagen,
       mensajes: req.flash()
     });
     return;
