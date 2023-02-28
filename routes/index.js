@@ -74,5 +74,9 @@ router.post('/vacantes/:url', vacantesController.subirCV, vacantesController.con
 router.get('/candidatos/:id', authController.verificarUsuario, vacantesController.mostrarCandidatos);
 
 
+// Buscador de vacantes
+router.post('/buscador', vacantesController.buscarVacantes);
+
+
   return router;
 };

@@ -12,6 +12,7 @@ const bodyParser = require("body-parser");
 const expressValidator = require('express-validator');
 const flash = require('connect-flash');
 const passport = require('./config/passport');
+const createError =  require('http-errors');
 
 const Handlebars = require('handlebars')
 const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
@@ -67,5 +68,21 @@ app.use((req, res, next) => {
 });
 
 app.use("/", router());
+
+// 404 pagina no existente
+app.use((req, res, next) => {
+  //instalamos el paquete http-errors para captura de estos errores
+  next(createError(404, 'No encontrado'));
+})
+
+// Administracion de los errores
+app.use((error, req, res) => {
+  //al pasar los errores a las variables locals, se pasan automaticamente a la vista
+    res.locals.mensaje = error.message;
+    const status = error.status || 500;
+    res.locals.status = status;
+    res.status(status);
+    res.render('error');
+})
 
 app.listen(process.env.PUERTO);
